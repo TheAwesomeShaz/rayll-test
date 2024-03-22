@@ -130,9 +130,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50516eae539f7c6488c62cfbb2123a75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 
   coinValue: 1
   rotationSpeed: 500
   coinCollider: {fileID: 3306524631209747475}
+  visual: {fileID: 3341160147034498838}
 --- !u!135 &3306524631209747475
 SphereCollider:
   m_ObjectHideFlags: 0

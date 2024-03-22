@@ -6,7 +6,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameManager gameManager;
     [SerializeField] private TMP_Text coinsText;
 
-    private void Start()
+    private void Awake()
     {
         gameManager.OnUpdateCoinsUI += GameManager_OnUpdateCoinsUI;
     }

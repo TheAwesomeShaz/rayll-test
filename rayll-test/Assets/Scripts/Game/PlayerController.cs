@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IDataPersistence
 {
     // We can use event handlers here but since this is simple we go with Action
     public event Action<int> OnCoinCollected;
@@ -32,5 +32,17 @@ public class PlayerController : MonoBehaviour
     public void CollectCoin(int score)
     {
         OnCoinCollected?.Invoke(score);
+    }
+
+    public void LoadData(GameData data)
+    {
+        transform.position = data.playerPosition;
+        transform.rotation = Quaternion.Euler(data.playerRotation.x, data.playerRotation.y, data.playerRotation.z);
+    }
+
+    public void SaveData(GameData data)
+    {
+        data.playerPosition = transform.position;
+        data.playerRotation = transform.rotation.eulerAngles;
     }
 }
