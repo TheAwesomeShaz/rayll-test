@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "154739892162",
+    "project_id": "rayll-test",
+    "storage_bucket": "rayll-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154739892162:android:e1edd424898a34a0aa005b",
+        "android_client_info": {
+          "package_name": "com.theawesomeshaz.raylltest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRNx3NjRN7VjnLC6vgqrKylO5WWS4jSms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

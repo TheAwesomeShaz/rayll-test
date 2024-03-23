@@ -12,6 +12,7 @@ public class SaveSlot : MonoBehaviour
     [SerializeField] private GameObject hasDataContent;
     [SerializeField] private TMP_Text percentCompleteText;
 
+    public bool HasData { get; private set; } = false;
     private Button saveSlotButton;
 
     private void Awake()
@@ -23,11 +24,13 @@ public class SaveSlot : MonoBehaviour
     {
         if(data == null)
         {
+            HasData = false;
             noDataContent.SetActive(true);
             hasDataContent.SetActive(false);
         }
         else
         {
+            HasData = true;
             noDataContent.SetActive(false) ;
             hasDataContent.SetActive(true);
 

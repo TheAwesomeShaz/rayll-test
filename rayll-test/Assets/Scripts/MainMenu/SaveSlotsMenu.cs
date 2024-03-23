@@ -6,11 +6,9 @@ using UnityEngine.UI;
 
 public class SaveSlotsMenu : Menu
 {
-    [Header("Menu Navigation")]
     [SerializeField] private MainMenu mainMenu;
-
-    [Header("Menu Buttons")]
     [SerializeField] private Button backButton;
+    [SerializeField] private ConfirmationPopupMenu confirmationPopupMenu;
 
     private SaveSlot[] saveSlots;
     private const string GameSceneName = "Game";
@@ -24,17 +22,48 @@ public class SaveSlotsMenu : Menu
     public void OnClickSaveSlot(SaveSlot saveSlot)
     {
         DisableMenuButtons();
-        DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId());
-        if (!isLoadingGame)
+        if (isLoadingGame)
         {
-            DataPersistenceManager.Instance.NewGame();
+            DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId());
+            SaveGameAndLoadScene();  
         }
+        // SaveSlot has data and you want to overwrite a saved game
+        else if(saveSlot.HasData)
+        {
+            confirmationPopupMenu.ActivateMenu(
+                "Starting a new game will overwrite the data in current slot. Are you sure?",
+                //TODO: (There is a better way to do this instead of arrow functions fix in refactor)
+                // On Selecting Yes 
+                () =>
+                {
+                    DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId());
+                    DataPersistenceManager.Instance.NewGame();
+                    SaveGameAndLoadScene();
+                },
+                // On Selecting No
+                () =>
+                {
+                    this.ActivateMenu(isLoadingGame);
+                }
+                );
+        }
+        // Save slot is empty and you are starting new game
+        else
+        {
+            DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId());
+            DataPersistenceManager.Instance.NewGame();
+            SaveGameAndLoadScene();
+        }
+    }
+
+
+    private void SaveGameAndLoadScene()
+    {
+        
 
         DataPersistenceManager.Instance.SaveGame();
         SceneManager.LoadSceneAsync(GameSceneName);
     }
-
-    
 
     public void OnClickBackButton()
     {
@@ -45,6 +74,7 @@ public class SaveSlotsMenu : Menu
     public void ActivateMenu(bool isLoadingGame)
     {
         gameObject.SetActive(true);
+        backButton.interactable = true;
 
         this.isLoadingGame = isLoadingGame;
 
