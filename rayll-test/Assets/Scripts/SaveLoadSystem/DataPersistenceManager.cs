@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using System;
 
 public class DataPersistenceManager : MonoBehaviour
 {
@@ -9,7 +11,8 @@ public class DataPersistenceManager : MonoBehaviour
 
     private GameData gameData;
     private List<IDataPersistence> dataPersistenceObjects;
-    private FileDataHandler dataHandler;
+    //private FileDataHandler dataHandler;
+    private FirebaseDataHandler firebaseDataHandler;
 
     private string selectedProfileId = "";
 
@@ -26,8 +29,15 @@ public class DataPersistenceManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        dataHandler = new FileDataHandler(Application.persistentDataPath, fileName);
-        selectedProfileId = dataHandler.GetMostRecentlyUpdatedProfileId();
+        //dataHandler = new FileDataHandler(Application.persistentDataPath, fileName);
+        firebaseDataHandler = new FirebaseDataHandler();
+        //selectedProfileId = dataHandler.GetMostRecentlyUpdatedProfileId();
+        StartCoroutine(LoadSelectedProfileIdCoR(OnSelectedProfileIdLoaded));
+    }
+
+    private void OnSelectedProfileIdLoaded(string profileId)
+    {
+        selectedProfileId = profileId;
     }
 
     private void OnEnable()
@@ -40,26 +50,31 @@ public class DataPersistenceManager : MonoBehaviour
         SceneManager.sceneLoaded -= SceneManager_sceneLoaded; 
     }
 
-    private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        dataPersistenceObjects = FindAllDataPersistenceObjects();
-        LoadGame();
-    }
-
     public void NewGame()
     {
         this.gameData = new GameData();
     }
-    public void LoadGame()
+    private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        dataPersistenceObjects = FindAllDataPersistenceObjects();
+        StartCoroutine(LoadGame());
+    }
+
+    public void OnLoadGameComplete(GameData data)
+    {
+        gameData = data;
+    }
+
+    public IEnumerator LoadGame()
     {
         // Load Any saved data from anywhere using data handler
-        gameData = dataHandler.Load(selectedProfileId);
+        yield return StartCoroutine(firebaseDataHandler.Load(selectedProfileId, OnLoadGameComplete));
 
         // If there is no data then dont load anything;
         if (gameData == null)
         {
             Debug.Log("No Data was found, New Game Needs to be started before data can be loaded");
-            return;
+            yield break; 
         }
 
         // Push loaded data to local scripts
@@ -84,10 +99,11 @@ public class DataPersistenceManager : MonoBehaviour
             dataPersistenceObj.SaveData(gameData);
         }
 
-        gameData.lastUpdated = System.DateTime.Now.ToBinary(); 
+        gameData.lastUpdated = System.DateTime.Now.ToBinary();
 
         // Save Data file using data handler
-        dataHandler.Save(gameData, selectedProfileId);
+        //dataHandler.Save(gameData, selectedProfileId);
+        firebaseDataHandler.Save(gameData, selectedProfileId);
     }
 
 
@@ -95,6 +111,7 @@ public class DataPersistenceManager : MonoBehaviour
     {
         SaveGame();   
     }
+
     private List<IDataPersistence> FindAllDataPersistenceObjects()
     {
         IEnumerable<IDataPersistence> dataPersistenceObjects = FindObjectsOfType<MonoBehaviour>()
@@ -107,14 +124,19 @@ public class DataPersistenceManager : MonoBehaviour
         return gameData != null;
     }
 
-    public Dictionary<string, GameData> GetAllProfilesGameData()
+    public IEnumerator GetAllGameDataProfiles(Action<Dictionary<string, GameData>> onLoadComplete)
     {
-        return dataHandler.LoadAllProfiles();
+        yield return StartCoroutine(firebaseDataHandler.LoadAllProfilesCoR(onLoadComplete));
     }
  
     public void ChangeSelectedProfileId(string newProfileId)
     {
         this.selectedProfileId = newProfileId;
-        LoadGame();
+        StartCoroutine(LoadGame());
+    }
+
+    private IEnumerator LoadSelectedProfileIdCoR(Action<string> onLoadComplete)
+    {
+        yield return StartCoroutine(firebaseDataHandler.GetMostRecentlyUpdatedProfileIdCoR(onLoadComplete));
     }
 }

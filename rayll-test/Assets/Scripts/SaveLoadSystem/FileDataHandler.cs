@@ -24,7 +24,6 @@ public class FileDataHandler
             return null;
         }
 
-
         string fullPath = Path.Combine(dataDirPath, profileId, dataFileName);
         GameData loadedData = null;
         if (File.Exists(fullPath))

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,13 +10,19 @@ public class SaveSlotsMenu : Menu
     [SerializeField] private MainMenu mainMenu;
     [SerializeField] private Button backButton;
     [SerializeField] private ConfirmationPopupMenu confirmationPopupMenu;
+    [SerializeField] private GameObject loadingUI;
+    [SerializeField] private GameObject saveSlotsUI;
+
 
     private SaveSlot[] saveSlots;
     private const string GameSceneName = "Game";
     private bool isLoadingGame = false;
 
+    private Dictionary<string, GameData> gameDataProfiles;
+
     private void Awake()
     {
+        loadingUI.SetActive(false);
         saveSlots = GetComponentsInChildren<SaveSlot>();
     }
 
@@ -71,15 +78,32 @@ public class SaveSlotsMenu : Menu
         DeactivateMenu();
     }
 
+
     public void ActivateMenu(bool isLoadingGame)
     {
+      
+        this.isLoadingGame = isLoadingGame;
         gameObject.SetActive(true);
+        loadingUI.SetActive(true);
+        saveSlotsUI.SetActive(false);
+        // TODO: Set Loading UI Active
+
+        StartCoroutine(LoadAllProfiles());
+    }
+
+    public IEnumerator LoadAllProfiles()
+    {
+        yield return StartCoroutine(DataPersistenceManager.Instance.GetAllGameDataProfiles(OnGetAllGameDataProfilesCompleted));
+    }
+    public void OnGetAllGameDataProfilesCompleted(Dictionary<string, GameData> profiles)
+    {
+
+        // TODO: Set Loading UI InActive
+        loadingUI.SetActive(false);
+        saveSlotsUI.SetActive(true);
         backButton.interactable = true;
 
-        this.isLoadingGame = isLoadingGame;
-
-        // Load all profiles that exist
-        Dictionary<string, GameData> gameDataProfiles = DataPersistenceManager.Instance.GetAllProfilesGameData();
+        gameDataProfiles = profiles;
 
         GameObject firstSelected = backButton.gameObject;
 
@@ -89,7 +113,7 @@ public class SaveSlotsMenu : Menu
             GameData profileData = null;
             gameDataProfiles.TryGetValue(saveSlot.GetProfileId(), out profileData);
             saveSlot.SetData(profileData);
-            if(profileData == null && isLoadingGame)
+            if (profileData == null && isLoadingGame)
             {
                 saveSlot.SetInteractible(false);
             }
@@ -105,6 +129,7 @@ public class SaveSlotsMenu : Menu
             SetFirstSelected(firstSelectedButton);
         }
     }
+
     private void DeactivateMenu()
     {
         gameObject.SetActive(false);
