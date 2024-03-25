@@ -17,7 +17,7 @@ public class MainMenu : Menu
 
     private const string GameSceneName = "Game";
 
-    private void Awake()
+    private void Start()
     {
         DataPersistenceManager.Instance.OnLoadDataCompleted += DataPersistenceManager_OnLoadDataCompleted;
         SceneManager.sceneLoaded += SceneManager_sceneLoaded;
@@ -45,8 +45,9 @@ public class MainMenu : Menu
 
             if (!hasData)
             {
-                continueButton.interactable = false;
-                loadGameButton.interactable = false;
+                // They are enabled by default when in the main menu scene
+                continueButton.gameObject.SetActive(false);
+                loadGameButton.gameObject.SetActive(false);
             }
         }
     }

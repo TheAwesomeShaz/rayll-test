@@ -40,6 +40,7 @@ public class FirebaseDataHandler
 
         string json = JsonUtility.ToJson(gameData);
         dbReference.Child("users").Child(profileId).SetRawJsonValueAsync(json);
+        Debug.Log($"SAVING GAME BEFORE QUITTING COMPLETE");
     }
 
     public IEnumerator LoadCoR(string profileId, Action<GameData> OnLoadComplete)

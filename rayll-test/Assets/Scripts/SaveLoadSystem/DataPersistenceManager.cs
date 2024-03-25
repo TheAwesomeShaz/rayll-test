@@ -61,6 +61,10 @@ public class DataPersistenceManager : MonoBehaviour
     {
         SaveGame();   
     }
+    private void OnApplicationPause(bool pause)
+    {
+        SaveGame();
+    }
 
     private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
     {
