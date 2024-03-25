@@ -8,7 +8,6 @@ using UnityEngine;
 public class FirebaseDataHandler 
 {
     private DatabaseReference dbReference;
-
     public FirebaseDataHandler()
     {
         // Initialize FirebaseApp if not already initialized
@@ -32,7 +31,6 @@ public class FirebaseDataHandler
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
     }
 
-
     public void Save(GameData gameData, string profileId)
     {
         if(profileId == null)
@@ -44,15 +42,20 @@ public class FirebaseDataHandler
         dbReference.Child("users").Child(profileId).SetRawJsonValueAsync(json);
     }
 
-    public IEnumerator Load(string profileId, Action<GameData> OnLoadComplete)
+    public IEnumerator LoadCoR(string profileId, Action<GameData> OnLoadComplete)
     {
+        if(profileId == null)
+        {
+            yield break;
+        }
+
         var serverData = dbReference.Child("users").Child(profileId).GetValueAsync();
         yield return new WaitUntil(() => serverData.IsCompleted);
 
         DataSnapshot snapshot = serverData.Result;
         string jsonData = snapshot.GetRawJsonValue();
 
-        Debug.Log(jsonData);
+        //Debug.Log(jsonData);
 
         if (jsonData != null)
         {
@@ -65,7 +68,6 @@ public class FirebaseDataHandler
             OnLoadComplete?.Invoke(null);
         }
     }
-
 
     public IEnumerator GetMostRecentlyUpdatedProfileIdCoR(Action<string> onComplete)
     {
@@ -93,7 +95,6 @@ public class FirebaseDataHandler
                 // Convert lastUpdated to DateTime
                 DateTime profileLastUpdated = DateTime.FromBinary(gameData.lastUpdated);
 
-                // Compare lastUpdated timestamps
                 if (profileLastUpdated > mostRecentDateTime)
                 {
                     mostRecentProfileId = profileId;
@@ -131,9 +132,7 @@ public class FirebaseDataHandler
             GameData profileData = JsonUtility.FromJson<GameData>(profileSnapshot.GetRawJsonValue());
             profileDictionary.Add(profileId, profileData);
         }
-
         Debug.Log("Loaded all profiles from Firebase.");
-
         onComplete?.Invoke(profileDictionary);
     }
 }

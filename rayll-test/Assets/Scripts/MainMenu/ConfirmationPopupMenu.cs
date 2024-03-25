@@ -12,7 +12,7 @@ public class ConfirmationPopupMenu : Menu
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
 
-    public void ActivateMenu(string displayString, UnityAction confirmAction, UnityAction cancelAction)
+    public void ActivateMenu(string displayString, Action confirmAction, Action cancelAction)
     {
         gameObject.SetActive(true);
         displayText.text = displayString;

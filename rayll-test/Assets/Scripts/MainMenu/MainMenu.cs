@@ -7,22 +7,47 @@ using UnityEngine.UI;
 
 public class MainMenu : Menu
 {
-    [Header("Menu Navigation")]
     [SerializeField] private SaveSlotsMenu saveSlotsMenu;
 
-    [Header("Menu Buttons")]
     [SerializeField] private Button newGameButton;
     [SerializeField] private Button continueButton;
     [SerializeField] private Button loadGameButton;
+    [SerializeField] private GameObject mainMenuUI;
+    [SerializeField] private GameObject loadingUI;
 
     private const string GameSceneName = "Game";
 
-    private void Start()
+    private void Awake()
     {
-        if (!DataPersistenceManager.Instance.HasGameData())
+        DataPersistenceManager.Instance.OnLoadDataCompleted += DataPersistenceManager_OnLoadDataCompleted;
+        SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+    }
+
+    private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+    {
+        //TODO: remove the hard code in refactor
+        if(loadingUI!=null)
         {
-            continueButton.interactable = false;
-            loadGameButton.interactable = false;
+            //Enable Loading UI
+            loadingUI.SetActive(true);
+            mainMenuUI.SetActive(false);
+        }
+    }
+
+    private void DataPersistenceManager_OnLoadDataCompleted(bool hasData)
+    {
+        //TODO: remove the hard code in refactor
+        if (loadingUI!=null)
+        {
+            // DisableLoadingUI
+            loadingUI.SetActive(false);
+            mainMenuUI.SetActive(true);
+
+            if (!hasData)
+            {
+                continueButton.interactable = false;
+                loadGameButton.interactable = false;
+            }
         }
     }
 

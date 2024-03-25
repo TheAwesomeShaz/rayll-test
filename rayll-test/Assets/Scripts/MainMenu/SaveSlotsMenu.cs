@@ -17,6 +17,7 @@ public class SaveSlotsMenu : Menu
     private SaveSlot[] saveSlots;
     private const string GameSceneName = "Game";
     private bool isLoadingGame = false;
+    private SaveSlot currentClickedSaveSlot;
 
     private Dictionary<string, GameData> gameDataProfiles;
 
@@ -28,46 +29,53 @@ public class SaveSlotsMenu : Menu
 
     public void OnClickSaveSlot(SaveSlot saveSlot)
     {
+        currentClickedSaveSlot = saveSlot;
         DisableMenuButtons();
         if (isLoadingGame)
         {
-            DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId());
-            SaveGameAndLoadScene();  
+            DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId(), LoadSavedGame);
         }
         // SaveSlot has data and you want to overwrite a saved game
         else if(saveSlot.HasData)
         {
             confirmationPopupMenu.ActivateMenu(
                 "Starting a new game will overwrite the data in current slot. Are you sure?",
-                //TODO: (There is a better way to do this instead of arrow functions fix in refactor)
-                // On Selecting Yes 
-                () =>
-                {
-                    DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId());
-                    DataPersistenceManager.Instance.NewGame();
-                    SaveGameAndLoadScene();
-                },
+                // On Selecting Yes
+                OnYesSelected,
                 // On Selecting No
-                () =>
-                {
-                    this.ActivateMenu(isLoadingGame);
-                }
+                OnNoSelected
                 );
         }
         // Save slot is empty and you are starting new game
         else
         {
-            DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId());
-            DataPersistenceManager.Instance.NewGame();
-            SaveGameAndLoadScene();
+            DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId(), LoadNewGame);
         }
     }
 
+    private void OnYesSelected()
+    {
+        DataPersistenceManager.Instance.ChangeSelectedProfileId(currentClickedSaveSlot.GetProfileId(), LoadNewGame);
+    }
+
+    private void OnNoSelected()
+    {
+        this.ActivateMenu(isLoadingGame);
+    }
+
+    private void LoadSavedGame()
+    {
+        SaveGameAndLoadScene();
+    }
+
+    private void LoadNewGame()
+    {
+        DataPersistenceManager.Instance.NewGame();
+        SaveGameAndLoadScene();
+    }
 
     private void SaveGameAndLoadScene()
     {
-        
-
         DataPersistenceManager.Instance.SaveGame();
         SceneManager.LoadSceneAsync(GameSceneName);
     }
@@ -93,7 +101,7 @@ public class SaveSlotsMenu : Menu
 
     public IEnumerator LoadAllProfiles()
     {
-        yield return StartCoroutine(DataPersistenceManager.Instance.GetAllGameDataProfiles(OnGetAllGameDataProfilesCompleted));
+        yield return StartCoroutine(DataPersistenceManager.Instance.GetAllGameDataProfilesCoR(OnGetAllGameDataProfilesCompleted));
     }
     public void OnGetAllGameDataProfilesCompleted(Dictionary<string, GameData> profiles)
     {

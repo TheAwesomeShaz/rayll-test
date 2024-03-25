@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour,IDataPersistence
 
     public void SaveData(GameData data)
     {
-        // we are saving the coins from the coin Controllers itself by population a dictionary
+        // we are saving the coins from the coin Controllers itself by populating a dictionary
+        // so dont need to implement here
     }
 }
