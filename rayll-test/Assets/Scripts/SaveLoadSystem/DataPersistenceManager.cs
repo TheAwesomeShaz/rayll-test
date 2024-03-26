@@ -48,7 +48,6 @@ public class DataPersistenceManager : MonoBehaviour
         StartCoroutine(LoadMostRecentlyUpdatedProfileIdCoR(OnLoadProfileIdComplete));
     }
 
-
     private void OnEnable()
     {
         SceneManager.sceneLoaded += SceneManager_sceneLoaded; 

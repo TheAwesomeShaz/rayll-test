@@ -14,24 +14,23 @@ public class SaveSlotsMenu : Menu
     [SerializeField] private GameObject saveSlotsUI;
 
 
-    private SaveSlot[] saveSlots;
+    private SaveSlot[] mSaveSlots;
     private const string GameSceneName = "Game";
-    private bool isLoadingGame = false;
-    private SaveSlot currentClickedSaveSlot;
-
-    private Dictionary<string, GameData> gameDataProfiles;
+    private bool mIsLoadingGame = false;
+    private SaveSlot mCurrentClickedSaveSlot;
+    private Dictionary<string, GameData> mGameDataProfiles;
 
     private void Awake()
     {
         loadingUI.SetActive(false);
-        saveSlots = GetComponentsInChildren<SaveSlot>();
+        mSaveSlots = GetComponentsInChildren<SaveSlot>();
     }
 
     public void OnClickSaveSlot(SaveSlot saveSlot)
     {
-        currentClickedSaveSlot = saveSlot;
+        mCurrentClickedSaveSlot = saveSlot;
         DisableMenuButtons();
-        if (isLoadingGame)
+        if (mIsLoadingGame)
         {
             DataPersistenceManager.Instance.ChangeSelectedProfileId(saveSlot.GetProfileId(), LoadSavedGame);
         }
@@ -55,51 +54,56 @@ public class SaveSlotsMenu : Menu
 
     private void OnYesSelected()
     {
-        DataPersistenceManager.Instance.ChangeSelectedProfileId(currentClickedSaveSlot.GetProfileId(), LoadNewGame);
+        DataPersistenceManager.Instance.ChangeSelectedProfileId(mCurrentClickedSaveSlot.GetProfileId(), LoadNewGame);
     }
-
     private void OnNoSelected()
     {
-        this.ActivateMenu(isLoadingGame);
+        this.ActivateMenu(mIsLoadingGame);
     }
-
     private void LoadSavedGame()
     {
         SaveGameAndLoadScene();
     }
-
     private void LoadNewGame()
     {
         DataPersistenceManager.Instance.NewGame();
         SaveGameAndLoadScene();
     }
 
+
     private void SaveGameAndLoadScene()
     {
         DataPersistenceManager.Instance.SaveGame();
         SceneManager.LoadSceneAsync(GameSceneName);
     }
-
     public void OnClickBackButton()
     {
         mainMenu.ActivateMenu();
         DeactivateMenu();
     }
-
-
     public void ActivateMenu(bool isLoadingGame)
     {
       
-        this.isLoadingGame = isLoadingGame;
+        this.mIsLoadingGame = isLoadingGame;
         gameObject.SetActive(true);
         loadingUI.SetActive(true);
         saveSlotsUI.SetActive(false);
-        // TODO: Set Loading UI Active
 
-        StartCoroutine(LoadAllProfiles());
+        StartCoroutine(LoadAllProfilesCoR());
     }
-
-    public IEnumerator LoadAllProfiles()
+    private void DeactivateMenu()
+    {
+        gameObject.SetActive(false);
+    }
+    private void DisableMenuButtons()
+    {
+        foreach (SaveSlot saveSlot in mSaveSlots)
+        {
+            saveSlot.SetInteractible(false);
+        }
+        backButton.interactable = false;
+    }
+    public IEnumerator LoadAllProfilesCoR()
     {
         yield return StartCoroutine(DataPersistenceManager.Instance.GetAllGameDataProfilesCoR(OnGetAllGameDataProfilesCompleted));
     }
@@ -111,17 +115,17 @@ public class SaveSlotsMenu : Menu
         saveSlotsUI.SetActive(true);
         backButton.interactable = true;
 
-        gameDataProfiles = profiles;
+        mGameDataProfiles = profiles;
 
         GameObject firstSelected = backButton.gameObject;
 
         //loop through save slots and set content accordingly
-        foreach (SaveSlot saveSlot in saveSlots)
+        foreach (SaveSlot saveSlot in mSaveSlots)
         {
             GameData profileData = null;
-            gameDataProfiles.TryGetValue(saveSlot.GetProfileId(), out profileData);
+            mGameDataProfiles.TryGetValue(saveSlot.GetProfileId(), out profileData);
             saveSlot.SetData(profileData);
-            if (profileData == null && isLoadingGame)
+            if (profileData == null && mIsLoadingGame)
             {
                 saveSlot.SetInteractible(false);
             }
@@ -136,18 +140,5 @@ public class SaveSlotsMenu : Menu
             Button firstSelectedButton = firstSelected.GetComponent<Button>();
             SetFirstSelected(firstSelectedButton);
         }
-    }
-
-    private void DeactivateMenu()
-    {
-        gameObject.SetActive(false);
-    }
-    private void DisableMenuButtons()
-    {
-        foreach (SaveSlot saveSlot in saveSlots)
-        {
-            saveSlot.SetInteractible(false);
-        }
-        backButton.interactable = false;
     }
 }

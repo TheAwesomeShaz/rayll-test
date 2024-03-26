@@ -7,12 +7,11 @@ public class GameManager : MonoBehaviour,IDataPersistence
 {
     public event Action<string> OnUpdateCoinsUI;
 
-    private const string SceneName = "MainMenu";
     [SerializeField] private PlayerController playerController;
-    [SerializeField] private Transform[] coinTransforms;
 
-    //TODO: remove SerializeField and make score private after debugging is done
-    [SerializeField] private int coinsCollected;
+    private int mCoinsCollected;
+    private const string MenuSceneName = "MainMenu";
+
     private void Start()
     {
         playerController.OnCoinCollected += PlayerController_OnCoinCollected;
@@ -23,28 +22,28 @@ public class GameManager : MonoBehaviour,IDataPersistence
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             DataPersistenceManager.Instance.SaveGame();
-            SceneManager.LoadSceneAsync(SceneName);
+            SceneManager.LoadSceneAsync(MenuSceneName);
         }
     }
 
     private void PlayerController_OnCoinCollected(int coinValue)
     {
-        coinsCollected+=coinValue;
-        OnUpdateCoinsUI?.Invoke(coinsCollected.ToString());
+        mCoinsCollected+=coinValue;
+        OnUpdateCoinsUI?.Invoke(mCoinsCollected.ToString());
     }
 
     public void LoadData(GameData data)
     {
-        coinsCollected = 0;
+        mCoinsCollected = 0;
         foreach (KeyValuePair<string,bool> pair in data.coinsCollected)
         {
             if (pair.Value)
             {
-                coinsCollected++;
+                mCoinsCollected++;
             }
         }
 
-        OnUpdateCoinsUI?.Invoke(coinsCollected.ToString());
+        OnUpdateCoinsUI?.Invoke(mCoinsCollected.ToString());
     }
 
     public void SaveData(GameData data)
